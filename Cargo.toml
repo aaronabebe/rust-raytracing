@@ -1,0 +1,19 @@
+[package]
+name = "raytracing"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cairo = "0.0.4"
+cairo-rs = "0.15.10"
+gdk-pixbuf = "0.15.10"
+gio = "0.15.10"
+glib = "0.15.10"
+gtk = { version = "0.4.7", package = "gtk4" }
+image = "0.24.1"
+
+[[bin]]
+name = "raytracing"
+path = "main.rs"
