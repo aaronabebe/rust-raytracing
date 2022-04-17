@@ -83,7 +83,7 @@ fn build_ui(app: &Application) {
     // Image
     const aspect_ratio: f64 = 16.0 / 9.0;
     const width: u64 = 720;
-    const samples: u64 = 10;
+    const samples: u64 = 1;
     const height: u64 = ((720 as f64) / aspect_ratio) as u64;
 
     window.set_default_size(width as i32, height as i32);
