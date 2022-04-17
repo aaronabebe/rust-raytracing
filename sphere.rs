@@ -30,7 +30,7 @@ impl Hit for Sphere {
         } 
 
         let sqrtd = discriminant.sqrt();
-        let mut root = (-half_b + sqrtd) / a;
+        let mut root = (-half_b - sqrtd) / a;
         if root < t_min || t_max < root {
             root = (-half_b + sqrtd) / a;
             if root < t_min || t_max < root {
@@ -38,10 +38,9 @@ impl Hit for Sphere {
             }
         }
 
-        let p = r.at(root);
         let mut rec = HitRecord { 
             t: root, 
-            p: p, 
+            p: r.at(root), 
             normal: Vec3::new(0.0, 0.0, 0.0),
             front_face: false
         };
