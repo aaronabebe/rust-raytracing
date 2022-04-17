@@ -2,6 +2,9 @@
 
 Started as a way to sink time during a 3DGraph lesson. Let's see how far I get. 
 
+#### TODO 
+- [ ] implement cubes/other objects than spheres 
+
 ### Current Progress
 ![Render Example](img/sphere.png)
 

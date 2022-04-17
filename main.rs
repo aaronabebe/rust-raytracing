@@ -2,6 +2,7 @@ mod vec;
 mod ray;
 mod sphere;
 mod hit;
+mod camera;
 
 use gtk::prelude::*;
 use std::io::{stderr, Write};
@@ -10,6 +11,7 @@ use vec::{Vec3, Color, Point3};
 use ray::Ray;
 use sphere::Sphere;
 use hit::{Hit, World};
+use camera::Camera;
 
 fn ray_color(r: &Ray, world: &World) -> Color {
     if let Some(rec) = world.hit(r, 0.0, f64::INFINITY) {
@@ -23,20 +25,11 @@ fn ray_color(r: &Ray, world: &World) -> Color {
 }
 
 fn render(cr: &cairo::Context, width: u64, height: u64, aspect_ratio: f64) {
-    // Camera
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
+    let camera = Camera::new(aspect_ratio, 2.0, 1.0);
 
     let mut world = World::new();
     world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
     world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -0.0), 100.0)));
-
-    let origin = Point3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0
-                          - Vec3::new(0.0, 0.0, focal_length);
 
     for j in 0..height {
         eprint!("\rScanlines remaining: {:3}", height - j - 1);
@@ -48,10 +41,7 @@ fn render(cr: &cairo::Context, width: u64, height: u64, aspect_ratio: f64) {
             let u = (i as f64) / ((width - 1) as f64);
             let v = (j as f64) / ((height - 1) as f64);
 
-            let r = Ray::new(
-                origin,
-                lower_left_corner + u * horizontal + v * vertical - origin
-            );
+            let r = camera.get_ray(u, v);
             let px = ray_color(&r, &world);
 
             cr.rectangle((width - i) as f64, (height - j) as f64, 1.0, 1.0);
