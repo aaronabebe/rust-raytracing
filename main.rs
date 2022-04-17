@@ -1,44 +1,36 @@
 mod vec;
 mod ray;
+mod sphere;
+mod hit;
 
 use gtk::prelude::*;
 use std::io::{stderr, Write};
 use gtk::{Application, DrawingArea};
 use vec::{Vec3, Color, Point3};
 use ray::Ray;
+use sphere::Sphere;
+use hit::{Hit, World};
 
-fn ray_color(r: &Ray) -> Color {
-    let t = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, r);
-    if t > 0.0 {
-        let n = (r.at(t) - Vec3::new(0.0, 0.0, -1.0)).normalized();
-        return 0.5 * Color::new(n.x() + 0.8, n.y() + 0.8, n.z() + 0.8);
-        //return Color::new(0.2, 0.9, 0.5);
-    }
-
-    let unit_direction = r.direction().normalized();
-    let t = 0.5 * (unit_direction.y() + 1.0);
-    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.0, 0.7, 1.0)
-}
-
-fn hit_sphere(center: Point3, radius: f64, r: &Ray) -> f64 {
-    let oc = r.origin() - center;
-    let a = r.direction().dot(r.direction());
-    let b = 2.0 * oc.dot(r.direction());
-    let c = oc.dot(oc) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
-    if discriminant < 0.0 {
-        -1.0
+fn ray_color(r: &Ray, world: &World) -> Color {
+    if let Some(rec) = world.hit(r, 0.0, f64::INFINITY) {
+        0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0))
     } else {
-        (-b - discriminant.sqrt()) / (2.0 * a)
+        // background
+        let unit_direction = r.direction().normalized();
+        let t = 0.5 * (unit_direction.y() + 1.0);
+        (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
     }
 }
-
 
 fn render(cr: &cairo::Context, width: u64, height: u64, aspect_ratio: f64) {
     // Camera
     let viewport_height = 2.0;
     let viewport_width = aspect_ratio * viewport_height;
     let focal_length = 1.0;
+
+    let mut world = World::new();
+    world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -0.0), 100.0)));
 
     let origin = Point3::new(0.0, 0.0, 0.0);
     let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
@@ -60,7 +52,7 @@ fn render(cr: &cairo::Context, width: u64, height: u64, aspect_ratio: f64) {
                 origin,
                 lower_left_corner + u * horizontal + v * vertical - origin
             );
-            let px = ray_color(&r);
+            let px = ray_color(&r, &world);
 
             cr.rectangle((width - i) as f64, (height - j) as f64, 1.0, 1.0);
             cr.set_source_rgb(px.x(), px.y(), px.z());
@@ -77,8 +69,8 @@ fn build_ui(app: &Application) {
 
     // Image
     const aspect_ratio: f64 = 16.0 / 9.0;
-    const width: u64 = 540;
-    const height: u64 = ((540 as f64) / aspect_ratio) as u64;
+    const width: u64 = 720;
+    const height: u64 = ((720 as f64) / aspect_ratio) as u64;
 
     window.set_default_size(width as i32, height as i32);
 
