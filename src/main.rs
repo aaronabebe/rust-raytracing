@@ -47,11 +47,11 @@ fn render(
     let camera = Camera::new(aspect_ratio, 2.0, 1.0);
 
     let mut world = World::new();
-    let mat_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.1, 0.1)));
+    let mat_ground = Rc::new(Lambertian::new(Color::new(0.4, 0.1, 0.1)));
     let sphere_ground = Sphere::new(Point3::new(0.0, -100.5, -0.0), 100.0, mat_ground);
     world.push(Box::new(sphere_ground));
 
-    let mat_center = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.1)));
+    let mat_center = Rc::new(Lambertian::new(Color::new(1.0, 0.6, 0.3)));
     let sphere_center = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center);
     world.push(Box::new(sphere_center));
 
