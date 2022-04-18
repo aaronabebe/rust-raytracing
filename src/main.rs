@@ -3,27 +3,31 @@ mod ray;
 mod sphere;
 mod hit;
 mod camera;
+mod material;
 
 use gtk::prelude::*;
 use std::io::{stderr, Write};
 use gtk::{Application, DrawingArea};
-use vec::{Vec3, Color, Point3};
+use vec::{Color, Point3};
+use material::{Lambertian};
 use ray::Ray;
 use sphere::Sphere;
 use hit::{Hit, World};
 use camera::Camera;
 use rand::Rng;
+use std::rc::Rc;
 
 fn ray_color(r: &Ray, world: &World, depth: u64) -> Color {
     if depth <= 0 {
-        return Color::new(1.0, 0.0, 1.0);
+        return Color::new(0.0, 0.0, 0.0);
     }
 
     if let Some(rec) = world.hit(r, 0.001, f64::INFINITY) {
-        let target = rec.p + rec.normal + Vec3::random_in_unit_sphere().normalized();
-        let r = Ray::new(rec.p, target - rec.p);
-        0.5 * ray_color(&r, world, depth - 1)
-        //0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0))
+        if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
+            attenuation * ray_color(&scattered, world, depth - 1)
+        } else {
+            Color::new(0.0, 0.0, 0.0)
+        }
     } else {
         // background
         let unit_direction = r.direction().normalized();
@@ -43,8 +47,13 @@ fn render(
     let camera = Camera::new(aspect_ratio, 2.0, 1.0);
 
     let mut world = World::new();
-    world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-    world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -0.0), 100.0)));
+    let mat_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.1, 0.1)));
+    let sphere_ground = Sphere::new(Point3::new(0.0, -100.5, -0.0), 100.0, mat_ground);
+    world.push(Box::new(sphere_ground));
+
+    let mat_center = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.1)));
+    let sphere_center = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center);
+    world.push(Box::new(sphere_center));
 
     let mut rng = rand::thread_rng();
     for j in 0..height {

@@ -53,6 +53,11 @@ impl Vec3 {
         self / self.length()
     }
 
+    pub fn near_zero(self) -> bool {
+        const EPS: f64 = 1.0e-8;
+        self[0].abs() < EPS && self[1].abs() < EPS && self[2].abs() < EPS
+    }
+
     pub fn random(r: Range<f64>) -> Vec3 {
         let mut rng = rand::thread_rng();
 
@@ -71,6 +76,15 @@ impl Vec3 {
             if v.length() < 1.0 {
                 return v;
             }
+        }
+    }
+
+    pub fn random_in_hemisphere(normal: Vec3) -> Vec3 {
+        let in_unit_sphere = Self::random_in_unit_sphere();
+        if in_unit_sphere.dot(normal) > 0.0 {
+            in_unit_sphere
+        } else {
+            (-1.0) * in_unit_sphere
         }
     }
 }
@@ -149,6 +163,16 @@ impl Mul<Vec3> for f64 {
     fn mul(self, other: Vec3) -> Vec3 {
         Vec3 {
             e: [self * other[0], self * other[1], self * other[2]]
+        }
+    }
+}
+
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, other: Vec3) -> Vec3 {
+        Vec3 {
+            e: [self[0] * other[0], self[1] * other[1], self[2] * other[2]]
         }
     }
 }
