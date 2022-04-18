@@ -9,7 +9,7 @@ use gtk::prelude::*;
 use std::io::{stderr, Write};
 use gtk::{Application, DrawingArea};
 use vec::{Color, Point3};
-use material::{Lambertian};
+use material::{Lambertian, Metal};
 use ray::Ray;
 use sphere::Sphere;
 use hit::{Hit, World};
@@ -44,7 +44,7 @@ fn render(
     samples: u64,
     max_depth: u64
 ) {
-    let camera = Camera::new(aspect_ratio, 2.0, 1.0);
+    let camera = Camera::new(aspect_ratio, 3.0, 1.0);
 
     let mut world = World::new();
     let mat_ground = Rc::new(Lambertian::new(Color::new(0.4, 0.1, 0.1)));
@@ -54,6 +54,14 @@ fn render(
     let mat_center = Rc::new(Lambertian::new(Color::new(1.0, 0.6, 0.3)));
     let sphere_center = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center);
     world.push(Box::new(sphere_center));
+
+    let mat_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.2));
+    let sphere_left = Sphere::new(Point3::new(1.0, 0.2, -0.8), 0.3, mat_left);
+    world.push(Box::new(sphere_left));
+
+    let mat_right = Rc::new(Metal::new(Color::new(0.4, 0.8, 0.8), 0.9));
+    let sphere_right = Sphere::new(Point3::new(-1.0, 0.2, -0.8), 0.3, mat_right);
+    world.push(Box::new(sphere_right));
 
     let mut rng = rand::thread_rng();
     for j in 0..height {
@@ -96,7 +104,7 @@ fn build_ui(app: &Application) {
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
     const WIDTH: u64 = 720;
     const HEIGHT: u64 = ((720 as f64) / ASPECT_RATIO) as u64;
-    const SAMPLES: u64 = 10;
+    const SAMPLES: u64 = 1;
     const MAX_DEPTH: u64 = 5;
 
     window.set_default_size(WIDTH as i32, HEIGHT as i32);
