@@ -14,6 +14,7 @@ glib = "0.15.10"
 gtk = { version = "0.4.7", package = "gtk4" }
 image = "0.24.1"
 rand = "0.8.5"
+rayon = "1.5.2"
 
 [[bin]]
 name = "raytracing"
